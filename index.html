@@ -186,7 +186,24 @@ function parseJsonSafe(v, fallback){
 }
 
 /* ======================= LOAD DATA ======================= */
+// FIX PERFORMA (loading awal beberapa detik): dulu fungsi ini menembak
+// 3 request terpisah (getSettings, getPages, getProducts). Meski
+// dikirim "paralel" dari browser, tiap request Apps Script tetap
+// punya overhead sendiri, jadi waktunya numpuk. Sekarang cukup 1
+// request 'getInit' yang menggabungkan ketiganya (lihat Code.gs).
+// Kalau backend belum di-deploy ulang dengan action 'getInit' (masih
+// versi lama), otomatis jatuh ke cara lama (3 request) supaya tidak rusak.
 async function loadAll() {
+  const init = await api('getInit', {}, 'GET');
+  if (init.ok === false && init.error === 'NOT_CONFIGURED') { State.notReady = true; State.loading = false; return; }
+
+  if (init.ok) {
+    applyInitData(init.data);
+    State.loading = false;
+    return;
+  }
+
+  // Fallback: backend lama belum punya action 'getInit'
   const [s, pg, pr] = await Promise.all([
     api('getSettings', {}, 'GET'),
     api('getPages', {}, 'GET'),
@@ -197,6 +214,12 @@ async function loadAll() {
   if (pg.ok) { State.pages = {}; pg.data.forEach(p => State.pages[p.key] = p); }
   if (pr.ok) State.products = pr.data;
   State.loading = false;
+}
+function applyInitData(data){
+  State.settings = data.settings || {};
+  State.pages = {};
+  (data.pages || []).forEach(p => State.pages[p.key] = p);
+  State.products = data.products || [];
 }
 
 /* ======================= ROUTER ======================= */
@@ -270,7 +293,17 @@ function layout(content){
 
 function render(){
   const app = document.getElementById('app');
-  if (State.loading) { app.innerHTML = `<div class="container"><p>Memuat...</p></div>`; return; }
+  if (State.loading) {
+    // Indikator loading yang terlihat (bukan halaman kosong putih polos)
+    // supaya pengunjung tahu halaman sedang memuat, bukan macet/rusak.
+    app.innerHTML = `
+      <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#f7f6f1">
+        <div style="width:36px;height:36px;border-radius:50%;border:3px solid #e4e2da;border-top-color:#0f8a4b;animation:spin .8s linear infinite"></div>
+        <div style="color:#66756c;font-family:'Inter',sans-serif;font-size:14px">Memuat toko...</div>
+        <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+      </div>`;
+    return;
+  }
   if (State.notReady) { app.innerHTML = renderNotReady(); return; }
 
   const route = State.route;
@@ -561,7 +594,7 @@ function renderAdmin(app){
     <button class="btn" onclick="logout()">Keluar</button>
   </header>
   <div class="container">
-    <div class="tabs">${tabs.map(([k,l]) => `<button id="${k==='pesanan'?'tab-pesanan':''}" class="${adminTab===k?'active':''}" onclick="setAdminTab('${k}')">${l}</button>`).join('')}</div>
+    <div class="tabs">${tabs.map(([k,l]) => `<button id="${k==='pesanan'?'tab-pesanan':''}" data-tab="${k}" class="${adminTab===k?'active':''}" onclick="setAdminTab('${k}')">${l}</button>`).join('')}</div>
     <div id="admin-content"></div>
   </div>`;
   renderAdminTab();
@@ -576,7 +609,19 @@ function renderAdmin(app){
     loadOrdersTabBadge();
   }
 }
-function setAdminTab(t){ adminTab = t; renderAdminTab(); }
+// FIX: sebelumnya fungsi ini cuma mengganti konten (renderAdminTab())
+// tapi tidak pernah menggambar ulang tombol-tombol tab, sehingga garis
+// hijau "tab aktif" nyangkut di tab pertama yang dibuka dan tidak
+// pernah ikut pindah walau kontennya sudah berganti — bikin tampilan
+// membingungkan seolah halaman salah/nyangkut, padahal sebenarnya cuma
+// highlight visualnya yang basi.
+function setAdminTab(t){
+  adminTab = t;
+  document.querySelectorAll('.tabs button[data-tab]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === t);
+  });
+  renderAdminTab();
+}
 function renderAdminTab(){
   const el = document.getElementById('admin-content');
   if (adminTab === 'produk') el.innerHTML = adminProdukHtml();
