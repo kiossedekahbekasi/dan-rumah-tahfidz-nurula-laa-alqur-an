@@ -225,10 +225,10 @@ function layout(content){
     </div>
   </header>
   <nav class="nav">
-    ${navItem('#/katalog','🏬 Katalog Sembako')}
-    ${navItem('#/tentang-toko','ℹ️ Tentang Toko Sembako')}
-    ${navItem('#/tentang-tahfidz','📖 Tentang Rumah Tahfidz')}
-    ${navItem('#/promo','🎁 Paket Hemat & Promo')}
+    ${navItem('#/katalog','🏬 ' + esc(s.navKatalog || 'Katalog Sembako'))}
+    ${navItem('#/tentang-toko','ℹ️ ' + esc(s.navTentangToko || 'Tentang Toko Sembako'))}
+    ${navItem('#/tentang-tahfidz','📖 ' + esc(s.navTentangTahfidz || 'Tentang Rumah Tahfidz'))}
+    ${navItem('#/promo','🎁 ' + esc(s.navPromo || 'Paket Hemat & Promo'))}
   </nav>
   <div class="container">${content}</div>
   <div class="footer">© ${new Date().getFullYear()} ${esc(s.storeName||'Toko Sembako')} — data dikelola lewat Google Sheets.</div>
@@ -494,9 +494,45 @@ function renderAdminTab(){
   else if (adminTab === 'sync') el.innerHTML = adminSyncHtml();
 }
 
+/* ---------- GRAFIK STOK BARANG ---------- */
+function stockChartHtml(products){
+  if (!products || !products.length) return '';
+  const items = products.slice(0, 20); // batasi 20 biar grafik tidak kepanjangan
+  const max = Math.max.apply(null, items.map(p => Number(p.stock)||0).concat([1]));
+  const barW = 34, gap = 16, chartH = 150, labelH = 60, topPad = 20;
+  const width = items.length * (barW + gap) + gap;
+  const shortName = (s) => { s = String(s||''); return s.length > 12 ? s.slice(0,11) + '…' : s; };
+  const bars = items.map((p, i) => {
+    const stock = Number(p.stock) || 0;
+    const h = Math.max(2, Math.round((stock / max) * chartH));
+    const x = gap + i * (barW + gap);
+    const y = topPad + (chartH - h);
+    const color = stock <= 5 ? '#c0392b' : stock <= 15 ? '#b8902e' : '#0f8a4b';
+    const labelY = topPad + chartH + 16;
+    return `<g>
+      <rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="4" fill="${color}"></rect>
+      <text x="${x + barW/2}" y="${y - 6}" font-size="11" text-anchor="middle" fill="#16241d" font-weight="600">${stock}</text>
+      <text x="${x + barW/2}" y="${labelY}" font-size="10" text-anchor="end" fill="#66756c" transform="rotate(-40 ${x + barW/2} ${labelY})">${esc(shortName(p.name))}</text>
+    </g>`;
+  }).join('');
+  return `
+    <div class="card" style="margin-bottom:18px;overflow-x:auto">
+      <h3 style="margin-top:0">📊 Grafik Stok Barang</h3>
+      <svg width="${width}" height="${topPad + chartH + labelH}" viewBox="0 0 ${width} ${topPad + chartH + labelH}" style="display:block">
+        <line x1="0" y1="${topPad + chartH}" x2="${width}" y2="${topPad + chartH}" stroke="#e4e2da"></line>
+        ${bars}
+      </svg>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px">
+        🟩 Stok aman (&gt;15) &nbsp; 🟨 Stok menipis (6–15) &nbsp; 🟥 Stok rendah (≤5)
+        ${products.length > 20 ? `<br/>Menampilkan 20 produk pertama dari ${products.length} total produk.` : ''}
+      </div>
+    </div>`;
+}
+
 /* ---------- KELOLA PRODUK (dengan upload foto) ---------- */
 function adminProdukHtml(){
   return `
+    ${stockChartHtml(State.products)}
     <div class="card" style="margin-bottom:18px">
       <h3 style="margin-top:0">Tambah / Ubah Produk</h3>
       <input type="hidden" id="p-id"/>
@@ -750,6 +786,18 @@ function adminInfoHtml(){
       </div>
       <div class="field"><label>Catatan Ongkir</label><input id="s-freeShippingNote" value="${esc(s.freeShippingNote||'')}"/></div>
       <div class="field"><label>Teks Paket Hemat & Promo</label><textarea id="s-promoText">${esc(s.promoText||'')}</textarea></div>
+    </div>
+    <div class="card" style="margin-top:18px">
+      <h3 style="margin-top:0">Label Menu Navigasi</h3>
+      <p class="section-sub" style="margin-top:-8px">Ubah tulisan pada 4 menu navigasi di bagian atas website (emoji tetap otomatis, cukup ganti teksnya).</p>
+      <div class="row">
+        <div class="field" style="flex:1;min-width:180px"><label>🏬 Menu Katalog</label><input id="s-navKatalog" value="${esc(s.navKatalog||'Katalog Sembako')}"/></div>
+        <div class="field" style="flex:1;min-width:180px"><label>ℹ️ Menu Tentang Toko</label><input id="s-navTentangToko" value="${esc(s.navTentangToko||'Tentang Toko Sembako')}"/></div>
+      </div>
+      <div class="row">
+        <div class="field" style="flex:1;min-width:180px"><label>📖 Menu Tentang Tahfidz</label><input id="s-navTentangTahfidz" value="${esc(s.navTentangTahfidz||'Tentang Rumah Tahfidz')}"/></div>
+        <div class="field" style="flex:1;min-width:180px"><label>🎁 Menu Promo</label><input id="s-navPromo" value="${esc(s.navPromo||'Paket Hemat & Promo')}"/></div>
+      </div>
       <button class="btn btn-primary" onclick="saveSettingsForm()">💾 Simpan Pengaturan</button>
       <span id="s-msg"></span>
     </div>
@@ -762,7 +810,11 @@ async function saveSettingsForm(){
     openHours: document.getElementById('s-openHours').value,
     whatsapp: document.getElementById('s-whatsapp').value,
     freeShippingNote: document.getElementById('s-freeShippingNote').value,
-    promoText: document.getElementById('s-promoText').value
+    promoText: document.getElementById('s-promoText').value,
+    navKatalog: document.getElementById('s-navKatalog').value,
+    navTentangToko: document.getElementById('s-navTentangToko').value,
+    navTentangTahfidz: document.getElementById('s-navTentangTahfidz').value,
+    navPromo: document.getElementById('s-navPromo').value
   };
   const res = await api('saveSettings', { token: State.auth.token, settings }, 'POST');
   const msg = document.getElementById('s-msg');
