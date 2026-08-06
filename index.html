@@ -50,6 +50,18 @@
   .pill-blue{background:#e7eefb;color:#1f4fa3}
   .pill-red{background:#fdecec;color:#b3261e}
   .hero{background:linear-gradient(120deg,var(--primary) 0%,var(--primary-dark) 100%);color:#fff;border-radius:20px;padding:40px 32px;margin-bottom:28px}
+  .hero-slider{position:relative;border-radius:20px;overflow:hidden;margin-bottom:28px;background:linear-gradient(120deg,var(--primary) 0%,var(--primary-dark) 100%)}
+  .hero-slider-track{display:flex;transition:transform .6s cubic-bezier(.65,0,.35,1)}
+  .hero-slide{flex:0 0 100%;min-width:100%;padding:40px 32px;color:#fff;box-sizing:border-box;background-size:cover;background-position:center}
+  .hero-slide-overlay{background:linear-gradient(120deg,rgba(15,20,17,.55) 0%,rgba(15,20,17,.25) 100%);margin:-40px -32px;padding:40px 32px;border-radius:20px}
+  .hero-dots{position:absolute;bottom:16px;left:0;right:0;display:flex;justify-content:center;gap:8px}
+  .hero-dot{width:8px;height:8px;border-radius:50%;background:#ffffff66;border:none;cursor:pointer;padding:0;transition:background .2s,width .2s}
+  .hero-dot.active{background:#fff;width:22px;border-radius:5px}
+  .hero-arrow{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:#ffffff33;border:none;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+  .hero-arrow:hover{background:#ffffff55}
+  .hero-arrow.prev{left:14px}
+  .hero-arrow.next{right:14px}
+  @media (max-width:640px){ .hero-arrow{display:none} }
   .hero h1{font-size:30px;margin:0 0 10px}
   .hero p{opacity:.9;max-width:560px}
   .section-title{font-size:22px;margin:0 0 4px}
@@ -262,6 +274,7 @@ function render(){
   if (State.notReady) { app.innerHTML = renderNotReady(); return; }
 
   const route = State.route;
+  if (!route.startsWith('#/katalog') && heroSlideTimer) { clearInterval(heroSlideTimer); heroSlideTimer = null; }
   let content = '';
   if (route.startsWith('#/katalog')) content = renderKatalog();
   else if (route.startsWith('#/tentang-toko')) content = renderPage('tentang-toko-sembako');
@@ -305,13 +318,64 @@ function productGridHtml(){
       <button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="addToCart('${esc(p.id)}')">+ Keranjang</button>
     </div>`).join('') + `</div>`;
 }
-function renderKatalog(){
+/* ---------- HERO SLIDER (banner beranda, bisa lebih dari 1 foto + animasi geser) ---------- */
+let heroSlideIndex = 0;
+let heroSlideTimer = null;
+
+function heroSliderHtml(){
+  const banners = parseJsonSafe(State.settings.heroBanners, []);
+  // Slide default (selalu ada) sebagai fallback kalau admin belum tambah banner foto
+  const defaultSlide = { image: '', title: 'Belanja Sembako Lengkap Hari Ini', subtitle: 'Semua orang bisa lihat-lihat katalog. Untuk checkout, silakan daftar/masuk dulu ya.' };
+  const slides = banners.length ? banners : [defaultSlide];
+
+  const slideHtml = (b, i) => {
+    const bg = b.image ? `background-image:url('${esc(b.image)}')` : '';
+    return `<div class="hero-slide" style="${bg}">
+      <div class="hero-slide-overlay">
+        <span class="pill" style="background:#ffffff33;color:#fff">Katalog</span>
+        <h1>${esc(b.title || 'Belanja Sembako Lengkap Hari Ini')}</h1>
+        <p>${esc(b.subtitle || '')}</p>
+      </div>
+    </div>`;
+  };
+
   return `
-    <div class="hero">
-      <span class="pill" style="background:#ffffff33;color:#fff">Katalog</span>
-      <h1>Belanja Sembako Lengkap Hari Ini</h1>
-      <p>Semua orang bisa lihat-lihat katalog. Untuk checkout, silakan daftar/masuk dulu ya.</p>
-    </div>
+    <div class="hero-slider" id="hero-slider">
+      <div class="hero-slider-track" id="hero-slider-track" style="transform:translateX(-${heroSlideIndex * 100}%)">
+        ${slides.map(slideHtml).join('')}
+      </div>
+      ${slides.length > 1 ? `
+        <button class="hero-arrow prev" onclick="heroSlideGo(${(heroSlideIndex - 1 + slides.length) % slides.length})">‹</button>
+        <button class="hero-arrow next" onclick="heroSlideGo(${(heroSlideIndex + 1) % slides.length})">›</button>
+        <div class="hero-dots">
+          ${slides.map((_, i) => `<button class="hero-dot ${i===heroSlideIndex?'active':''}" onclick="heroSlideGo(${i})"></button>`).join('')}
+        </div>` : ''}
+    </div>`;
+}
+function heroSlideGo(i){
+  const banners = parseJsonSafe(State.settings.heroBanners, []);
+  const total = Math.max(banners.length, 1);
+  heroSlideIndex = ((i % total) + total) % total;
+  const track = document.getElementById('hero-slider-track');
+  if (track) {
+    track.style.transform = `translateX(-${heroSlideIndex * 100}%)`;
+    document.querySelectorAll('.hero-dot').forEach((d, idx) => d.classList.toggle('active', idx === heroSlideIndex));
+  }
+  restartHeroAutoSlide();
+}
+function restartHeroAutoSlide(){
+  if (heroSlideTimer) clearInterval(heroSlideTimer);
+  const banners = parseJsonSafe(State.settings.heroBanners, []);
+  if (banners.length > 1) {
+    heroSlideTimer = setInterval(() => heroSlideGo(heroSlideIndex + 1), 5000);
+  }
+}
+
+function renderKatalog(){
+  heroSlideIndex = 0;
+  setTimeout(restartHeroAutoSlide, 0);
+  return `
+    ${heroSliderHtml()}
     <h2 class="section-title">Katalog Sembako</h2>
     <p class="section-sub">${State.products.length} produk tersedia</p>
     <div id="product-grid">${productGridHtml()}</div>
@@ -725,6 +789,44 @@ async function onGalleryImagePicked(input, uid){
 }
 function removeRow(uid){ const el = document.getElementById(uid); if (el) el.remove(); }
 
+/* ---------- BANNER BERANDA (hero slider) ---------- */
+function heroBannerRowHtml(b){
+  b = b || {};
+  const uid = 'row' + (++rowUidCounter);
+  return `
+    <div class="card hero-banner-row" id="${uid}">
+      <div class="row" style="align-items:flex-start">
+        <div style="width:110px">
+          <img id="img-${uid}" src="${esc(b.image||'')}" data-url="${esc(b.image||'')}" style="width:110px;height:82px;object-fit:cover;border-radius:8px;background:#eee;display:${b.image?'block':'none'}"/>
+          <input type="file" accept="image/*" style="font-size:11px;margin-top:4px;width:110px" onchange="onGalleryImagePicked(this,'${uid}')"/>
+        </div>
+        <div style="flex:1;min-width:180px">
+          <input placeholder="Judul (opsional)" value="${esc(b.title||'')}" style="margin-bottom:6px"/>
+          <textarea placeholder="Sub-judul / keterangan (opsional)" style="min-height:60px">${esc(b.subtitle||'')}</textarea>
+        </div>
+        <button class="btn" onclick="removeRow('${uid}')">Hapus</button>
+      </div>
+    </div>`;
+}
+function addHeroBannerRow(){
+  document.getElementById('hero-banner-list').insertAdjacentHTML('beforeend', heroBannerRowHtml({}));
+}
+function collectHeroBanners(){
+  const container = document.getElementById('hero-banner-list');
+  if (!container) return [];
+  const out = [];
+  container.querySelectorAll('.hero-banner-row').forEach(row => {
+    const img = row.querySelector('img');
+    const inputs = row.querySelectorAll('input:not([type="file"])');
+    const textarea = row.querySelector('textarea');
+    const url = img ? img.dataset.url : '';
+    const title = inputs[0] ? inputs[0].value.trim() : '';
+    const subtitle = textarea ? textarea.value.trim() : '';
+    if (url || title || subtitle) out.push({ image: url || '', title, subtitle });
+  });
+  return out;
+}
+
 function santriRowHtml(s){
   s = s || {};
   const uid = 'row' + (++rowUidCounter);
@@ -794,6 +896,7 @@ async function savePageForm(key){
 /* ---------- INFO TOKO & PROMO ---------- */
 function adminInfoHtml(){
   const s = State.settings;
+  const heroBanners = parseJsonSafe(s.heroBanners, []);
   return `
     <div class="card">
       <h3 style="margin-top:0">Info Toko & Pengaturan Tampilan</h3>
@@ -807,6 +910,12 @@ function adminInfoHtml(){
       </div>
       <div class="field"><label>Catatan Ongkir</label><input id="s-freeShippingNote" value="${esc(s.freeShippingNote||'')}"/></div>
       <div class="field"><label>Teks Paket Hemat & Promo</label><textarea id="s-promoText">${esc(s.promoText||'')}</textarea></div>
+    </div>
+    <div class="card" style="margin-top:18px">
+      <h3 style="margin-top:0">🖼️ Banner Beranda (Slider)</h3>
+      <p class="section-sub" style="margin-top:-8px">Tambahkan beberapa foto untuk ditampilkan bergantian (geser otomatis) di bagian paling atas halaman Katalog. Kalau kosong, banner default akan tetap muncul.</p>
+      <div id="hero-banner-list">${heroBanners.map(b => heroBannerRowHtml(b)).join('')}</div>
+      <button class="btn" onclick="addHeroBannerRow()">+ Tambah Banner</button>
     </div>
     <div class="card" style="margin-top:18px">
       <h3 style="margin-top:0">Label Menu Navigasi</h3>
@@ -835,7 +944,8 @@ async function saveSettingsForm(){
     navKatalog: document.getElementById('s-navKatalog').value,
     navTentangToko: document.getElementById('s-navTentangToko').value,
     navTentangTahfidz: document.getElementById('s-navTentangTahfidz').value,
-    navPromo: document.getElementById('s-navPromo').value
+    navPromo: document.getElementById('s-navPromo').value,
+    heroBanners: JSON.stringify(collectHeroBanners())
   };
   const res = await api('saveSettings', { token: State.auth.token, settings }, 'POST');
   const msg = document.getElementById('s-msg');
