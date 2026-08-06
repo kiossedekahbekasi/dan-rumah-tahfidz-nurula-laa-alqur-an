@@ -196,6 +196,27 @@ function go(hash){ location.hash = hash; }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function rupiah(n){ n = Number(n)||0; return 'Rp' + n.toLocaleString('id-ID'); }
 
+/* ---------- LIGHTBOX FOTO (perbesar gambar saat diklik) ---------- */
+function openImageLightbox(url){
+  if (!url) return;
+  const old = document.getElementById('img-lightbox');
+  if (old) old.remove();
+  const div = document.createElement('div');
+  div.id = 'img-lightbox';
+  div.className = 'modal-bg';
+  div.onclick = closeImageLightbox;
+  div.innerHTML = `
+    <div style="max-width:90vw;max-height:90vh;position:relative" onclick="event.stopPropagation()">
+      <button onclick="closeImageLightbox()" style="position:absolute;top:-14px;right:-14px;width:32px;height:32px;border-radius:50%;background:#fff;border:none;font-size:16px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3)">✕</button>
+      <img src="${esc(url)}" style="max-width:90vw;max-height:90vh;border-radius:12px;display:block;box-shadow:0 8px 30px rgba(0,0,0,.4)"/>
+    </div>`;
+  document.body.appendChild(div);
+}
+function closeImageLightbox(){
+  const el = document.getElementById('img-lightbox');
+  if (el) el.remove();
+}
+
 function layout(content){
   const s = State.settings;
   const isAdmin = State.auth && State.auth.role === 'admin';
@@ -276,7 +297,7 @@ function productGridHtml(){
   if (!items.length) return `<div class="empty">Produk tidak ditemukan.</div>`;
   return `<div class="grid grid-products">` + items.map(p => `
     <div class="card product-card">
-      ${p.image ? `<img class="product-thumb" src="${esc(p.image)}" alt="${esc(p.name)}"/>` : `<div class="product-thumb">🧺</div>`}
+      ${p.image ? `<img class="product-thumb" src="${esc(p.image)}" alt="${esc(p.name)}" style="cursor:zoom-in" onclick="event.stopPropagation();openImageLightbox('${esc(p.image).replace(/'/g,"\\'")}')"/>` : `<div class="product-thumb">🧺</div>`}
       <span class="pill">${esc(p.category||'')}</span>
       <h3 style="font-size:15px;margin:8px 0 2px">${esc(p.name)}</h3>
       <div style="font-size:12px;color:var(--muted)">${esc(p.unit||'')}</div>
@@ -325,7 +346,7 @@ function renderPage(key, isTahfidz){
       <p class="section-sub">Dokumentasi kegiatan terbaru.</p>
       <div class="grid grid-products" style="margin-bottom:30px">
         ${gallery.map(g => `<div class="card">
-          ${g.image ? `<img src="${esc(g.image)}" style="width:100%;height:130px;object-fit:cover;border-radius:10px;margin-bottom:8px"/>` : ''}
+          ${g.image ? `<img src="${esc(g.image)}" style="width:100%;height:130px;object-fit:cover;border-radius:10px;margin-bottom:8px;cursor:zoom-in" onclick="openImageLightbox('${esc(g.image).replace(/'/g,"\\'")}')"/>` : ''}
           <div style="font-size:13px;color:var(--muted)">${esc(g.caption||'')}</div>
         </div>`).join('')}
       </div>` : ''}
@@ -333,7 +354,7 @@ function renderPage(key, isTahfidz){
       <h2 class="section-title">🛍️ Produk & Promo</h2>
       <div class="grid grid-products" style="margin-bottom:30px">
         ${promoGallery.map(g => `<div class="card">
-          ${g.image ? `<img src="${esc(g.image)}" style="width:100%;height:130px;object-fit:cover;border-radius:10px;margin-bottom:8px"/>` : ''}
+          ${g.image ? `<img src="${esc(g.image)}" style="width:100%;height:130px;object-fit:cover;border-radius:10px;margin-bottom:8px;cursor:zoom-in" onclick="openImageLightbox('${esc(g.image).replace(/'/g,"\\'")}')"/>` : ''}
           <div style="font-size:13px;color:var(--muted)">${esc(g.caption||'')}</div>
         </div>`).join('')}
       </div>` : ''}
@@ -343,7 +364,7 @@ function renderPage(key, isTahfidz){
         <table>
           <tr><th>Foto</th><th>Nama</th><th>Kelas / Usia</th><th>Catatan / Hafalan</th></tr>
           ${santri.map(s => `<tr>
-            <td>${s.image ? `<img src="${esc(s.image)}" class="img-thumb-sm" style="width:48px;height:48px"/>` : '🧒'}</td>
+            <td>${s.image ? `<img src="${esc(s.image)}" class="img-thumb-sm" style="width:48px;height:48px;cursor:zoom-in" onclick="openImageLightbox('${esc(s.image).replace(/'/g,"\\'")}')"/>` : '🧒'}</td>
             <td>${esc(s.name)}</td><td>${esc(s.kelas)}</td><td>${esc(s.catatan)}</td>
           </tr>`).join('')}
         </table>
@@ -560,7 +581,7 @@ function adminProdukHtml(){
     <table>
       <tr><th>Foto</th><th>Nama</th><th>Kategori</th><th>Harga</th><th>Stok</th><th></th></tr>
       ${State.products.map(p => `<tr>
-        <td>${p.image ? `<img src="${esc(p.image)}" class="img-thumb-sm"/>` : '🧺'}</td>
+        <td>${p.image ? `<img src="${esc(p.image)}" class="img-thumb-sm" style="cursor:zoom-in" onclick="openImageLightbox('${esc(p.image).replace(/'/g,"\\'")}')"/>` : '🧺'}</td>
         <td>${esc(p.name)}</td><td>${esc(p.category)}</td><td>${rupiah(p.price)}</td><td>${esc(p.stock)}</td>
         <td class="row">
           <button class="btn" onclick="editProduct('${esc(p.id)}')">Edit</button>
