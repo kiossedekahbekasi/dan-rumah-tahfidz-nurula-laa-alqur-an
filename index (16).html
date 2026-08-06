@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Toko Sembako Berkah Utama</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#0f8a4b;
+    --primary-dark:#0b6b3a;
+    --cream:#f7f6f1;
+    --ink:#16241d;
+    --muted:#66756c;
+    --gold:#b8902e;
+    --border:#e4e2da;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Inter',sans-serif;color:var(--ink);background:var(--cream);}
+  h1,h2,h3,.brand{font-family:'Plus Jakarta Sans',sans-serif;}
+  a{text-decoration:none;color:inherit}
+  button{font-family:inherit;cursor:pointer}
+  .topbar{background:var(--primary-dark);color:#fff;font-size:13px;padding:6px 24px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+  header.main{background:#fff;border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+  .brand-block{display:flex;align-items:center;gap:10px;flex:1;min-width:220px}
+  .brand-logo{width:38px;height:38px;border-radius:10px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+  .brand-name{font-weight:700;font-size:17px}
+  .brand-tag{font-size:12px;color:var(--muted)}
+  .search{flex:2;min-width:200px}
+  .search input{width:100%;padding:10px 14px;border-radius:999px;border:1px solid var(--border);background:var(--cream)}
+  .nav{display:flex;gap:2px;background:#fff;border-bottom:1px solid var(--border);padding:0 24px;overflow-x:auto}
+  .nav a{padding:14px 16px;font-size:14px;font-weight:600;color:var(--muted);white-space:nowrap;border-bottom:3px solid transparent}
+  .nav a.active,.nav a:hover{color:var(--primary-dark);border-color:var(--primary)}
+  .container{max-width:1100px;margin:0 auto;padding:28px 24px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;border:1px solid var(--border);background:#fff;font-weight:600;font-size:14px}
+  .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .btn-primary:hover{background:var(--primary-dark)}
+  .btn-ghost{background:transparent}
+  .btn-dark{background:var(--ink);color:#fff}
+  .grid{display:grid;gap:16px}
+  .grid-products{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+  .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+  .product-card img,.product-thumb{width:100%;height:110px;border-radius:10px;background:linear-gradient(135deg,#eef6ef,#e3efe6);display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:28px;margin-bottom:10px;object-fit:cover}
+  .price{color:var(--primary-dark);font-weight:700;margin-top:4px}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:#e7f5eb;color:var(--primary-dark)}
+  .pill-gold{background:#f7efd9;color:var(--gold)}
+  .hero{background:linear-gradient(120deg,var(--primary) 0%,var(--primary-dark) 100%);color:#fff;border-radius:20px;padding:40px 32px;margin-bottom:28px}
+  .hero h1{font-size:30px;margin:0 0 10px}
+  .hero p{opacity:.9;max-width:560px}
+  .section-title{font-size:22px;margin:0 0 4px}
+  .section-sub{color:var(--muted);margin:0 0 18px;font-size:14px}
+  .modal-bg{position:fixed;inset:0;background:rgba(15,20,17,.5);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+  .modal{background:#fff;border-radius:16px;padding:32px;width:100%;max-width:400px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+  .field input,.field textarea,.field select{width:100%;padding:11px 13px;border-radius:9px;border:1px solid var(--border);font-family:inherit;font-size:14px}
+  .field textarea{min-height:110px;resize:vertical}
+  .msg{font-size:13px;padding:10px 12px;border-radius:8px;margin-bottom:12px}
+  .msg-error{background:#fdecec;color:#b3261e}
+  .msg-ok{background:#e7f5eb;color:var(--primary-dark)}
+  .tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:20px;border-bottom:1px solid var(--border)}
+  .tabs button{padding:11px 16px;background:none;border:none;font-weight:600;font-size:13.5px;color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap}
+  .tabs button.active{color:var(--primary-dark);border-color:var(--primary)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:10px;border-bottom:1px solid var(--border)}
+  .footer{margin-top:60px;padding:28px 24px;text-align:center;color:var(--muted);font-size:13px;border-top:1px solid var(--border)}
+  .badge-role{font-size:12px;background:#fff3;padding:2px 8px;border-radius:999px}
+  .empty{color:var(--muted);font-size:14px;padding:30px 0;text-align:center}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .rt-hero{background:linear-gradient(120deg,#1b3b2b,#0f2419);color:#f3ead0}
+  .rt-hero .pill-gold{background:rgba(184,144,46,.25);color:#e7cf8b}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+/* ======================= KONFIGURASI ======================= */
+const CONFIG = {
+  // 1) Deploy Code.gs sebagai Web App (lihat PANDUAN_SETUP.md)
+  // 2) Tempel URL hasil deploy di bawah ini, ganti tulisan di antara tanda kutip
+  API_URL: 'https://script.google.com/macros/s/AKfycbz37vPcbYpjoWMvPQIB5n0w5EkCU5vGRmlDWBT8XUQcLJge9SZkMv9xVDX6GtLeGr-fYg/exec'
+};
+
+/* ======================= STATE ======================= */
+const State = {
+  settings: {}, pages: {}, products: [],
+  auth: JSON.parse(localStorage.getItem('sembako_auth') || 'null'),
+  cart: JSON.parse(localStorage.getItem('sembako_cart') || '[]'),
+  route: location.hash || '#/katalog',
+  loading: true,
+  notReady: false
+};
+
+function saveAuth(a){ State.auth = a; localStorage.setItem('sembako_auth', JSON.stringify(a)); }
+function logout(){ saveAuth(null); location.hash = '#/katalog'; render(); }
+function saveCart(){ localStorage.setItem('sembako_cart', JSON.stringify(State.cart)); }
+
+/* ======================= API HELPER ======================= */
+async function api(action, payload, method) {
+  if (!CONFIG.API_URL || CONFIG.API_URL.indexOf('PASTE_URL') !== -1) {
+    return { ok: false, error: 'NOT_CONFIGURED' };
+  }
+  try {
+    if (method === 'GET') {
+      const qs = new URLSearchParams({ action, ...(payload || {}) }).toString();
+      const res = await fetch(CONFIG.API_URL + '?' + qs);
+      return await res.json();
+    } else {
+      const res = await fetch(CONFIG.API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action, ...(payload || {}) })
+      });
+      return await res.json();
+    }
+  } catch (err) {
+    return { ok: false, error: 'Gagal menghubungi server: ' + err };
+  }
+}
+
+/* ======================= LOAD DATA ======================= */
+async function loadAll() {
+  const [s, pg, pr] = await Promise.all([
+    api('getSettings', {}, 'GET'),
+    api('getPages', {}, 'GET'),
+    api('getProducts', {}, 'GET')
+  ]);
+  if (s.ok === false && s.error === 'NOT_CONFIGURED') { State.notReady = true; State.loading = false; return; }
+  if (s.ok) State.settings = s.data;
+  if (pg.ok) { State.pages = {}; pg.data.forEach(p => State.pages[p.key] = p); }
+  if (pr.ok) State.products = pr.data;
+  State.loading = false;
+}
+
+/* ======================= ROUTER ======================= */
+window.addEventListener('hashchange', () => { State.route = location.hash || '#/katalog'; render(); window.scrollTo(0,0); });
+
+function go(hash){ location.hash = hash; }
+
+/* ======================= RENDER ======================= */
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function rupiah(n){ n = Number(n)||0; return 'Rp' + n.toLocaleString('id-ID'); }
+
+function layout(content){
+  const s = State.settings;
+  const isAdmin = State.auth && State.auth.role === 'admin';
+  const isClient = State.auth && State.auth.role === 'client';
+  const route = State.route;
+  const navItem = (hash, label) => `<a href="${hash}" class="${route.startsWith(hash) ? 'active':''}">${label}</a>`;
+
+  return `
+  <div class="topbar">
+    <span>🟢 ${esc(s.openHours||'')}</span>
+    <span>${esc(s.freeShippingNote||'')} &nbsp;|&nbsp; 📞 WA: ${esc(s.whatsapp||'')}</span>
+  </div>
+  <header class="main">
+    <div class="brand-block">
+      <div class="brand-logo">🏪</div>
+      <div>
+        <div class="brand-name brand">${esc(s.storeName||'Toko Sembako')}</div>
+        <div class="brand-tag">${esc(s.tagline||'')}</div>
+      </div>
+    </div>
+    <div class="search"><input placeholder="Cari beras, minyak, telur, gula, mi instan..." oninput="onSearch(this.value)"/></div>
+    <div class="row">
+      <a class="btn" href="#/keranjang">🛒 Keranjang (${State.cart.length})</a>
+      ${isAdmin ? `<a class="btn btn-dark" href="#/admin">⚙️ Panel Admin</a><button class="btn" onclick="logout()">Keluar</button>`
+        : isClient ? `<span class="btn btn-ghost">👤 ${esc(State.auth.name)}</span><button class="btn" onclick="logout()">Keluar</button>`
+        : `<a class="btn btn-primary" href="#/login">Masuk / Daftar</a>`}
+    </div>
+  </header>
+  <nav class="nav">
+    ${navItem('#/katalog','🏬 Katalog Sembako')}
+    ${navItem('#/tentang-toko','ℹ️ Tentang Toko Sembako')}
+    ${navItem('#/tentang-tahfidz','📖 Tentang Rumah Tahfidz')}
+    ${navItem('#/promo','🎁 Paket Hemat & Promo')}
+  </nav>
+  <div class="container">${content}</div>
+  <div class="footer">© ${new Date().getFullYear()} ${esc(s.storeName||'Toko Sembako')} — data dikelola lewat Google Sheets.</div>
+  `;
+}
+
+function render(){
+  const app = document.getElementById('app');
+  if (State.loading) { app.innerHTML = `<div class="container"><p>Memuat...</p></div>`; return; }
+  if (State.notReady) { app.innerHTML = renderNotReady(); return; }
+
+  const route = State.route;
+  let content = '';
+  if (route.startsWith('#/katalog')) content = renderKatalog();
+  else if (route.startsWith('#/tentang-toko')) content = renderPage('tentang-toko-sembako');
+  else if (route.startsWith('#/tentang-tahfidz')) content = renderPage('tentang-rumah-tahfidz', true);
+  else if (route.startsWith('#/promo')) content = renderPromo();
+  else if (route.startsWith('#/keranjang')) content = renderCart();
+  else if (route.startsWith('#/login')) { app.innerHTML = renderAuthModal('login'); return; }
+  else if (route.startsWith('#/daftar')) { app.innerHTML = renderAuthModal('daftar'); return; }
+  else if (route.startsWith('#/admin')) { renderAdmin(app); return; }
+  else content = renderKatalog();
+
+  app.innerHTML = layout(content);
+}
+
+function renderNotReady(){
+  return `<div class="container" style="max-width:640px;margin-top:60px">
+    <div class="card">
+      <h2>⚙️ Website belum tersambung ke database</h2>
+      <p style="color:var(--muted)">Buka file <b>index.html</b>, cari baris <code>API_URL</code> di bagian atas &lt;script&gt;, lalu tempel URL Web App Apps Script Anda di sana (lihat <b>PANDUAN_SETUP.md</b>).</p>
+    </div>
+  </div>`;
+}
+
+/* ---------- KATALOG ---------- */
+let searchTerm = '';
+function onSearch(v){ searchTerm = v.toLowerCase(); renderKatalogInto(); }
+function renderKatalogInto(){
+  const el = document.getElementById('product-grid');
+  if (el) el.innerHTML = productGridHtml();
+}
+function productGridHtml(){
+  const items = State.products.filter(p => !searchTerm || (p.name||'').toLowerCase().includes(searchTerm));
+  if (!items.length) return `<div class="empty">Produk tidak ditemukan.</div>`;
+  return `<div class="grid grid-products">` + items.map(p => `
+    <div class="card product-card">
+      <div class="product-thumb">🧺</div>
+      <span class="pill">${esc(p.category||'')}</span>
+      <h3 style="font-size:15px;margin:8px 0 2px">${esc(p.name)}</h3>
+      <div style="font-size:12px;color:var(--muted)">${esc(p.unit||'')}</div>
+      <div class="price">${rupiah(p.price)}</div>
+      <button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="addToCart('${esc(p.id)}')">+ Keranjang</button>
+    </div>`).join('') + `</div>`;
+}
+function renderKatalog(){
+  return `
+    <div class="hero">
+      <span class="pill" style="background:#ffffff33;color:#fff">Katalog</span>
+      <h1>Belanja Sembako Lengkap Hari Ini</h1>
+      <p>Semua orang bisa lihat-lihat katalog. Untuk checkout, silakan daftar/masuk dulu ya.</p>
+    </div>
+    <h2 class="section-title">Katalog Sembako</h2>
+    <p class="section-sub">${State.products.length} produk tersedia</p>
+    <div id="product-grid">${productGridHtml()}</div>
+  `;
+}
+
+function addToCart(id){
+  const p = State.products.find(x => String(x.id) === String(id));
+  if (!p) return;
+  const existing = State.cart.find(c => c.id === id);
+  if (existing) existing.qty += 1; else State.cart.push({ id, name: p.name, price: p.price, qty: 1 });
+  saveCart(); render();
+}
+
+/* ---------- TENTANG (dipakai untuk Toko Sembako & Rumah Tahfidz) ---------- */
+function renderPage(key, isTahfidz){
+  const p = State.pages[key] || {};
+  return `
+    <div class="hero ${isTahfidz ? 'rt-hero' : ''}">
+      <span class="pill ${isTahfidz?'pill-gold':''}" style="background:#ffffff33;color:#fff">${isTahfidz ? '📖 Rumah Tahfidz' : 'ℹ️ Tentang Kami'}</span>
+      <h1>${esc(p.title || (isTahfidz ? 'Tentang Rumah Tahfidz' : 'Tentang Toko Sembako'))}</h1>
+    </div>
+    <div class="card" style="max-width:760px;line-height:1.7;font-size:15px">
+      ${p.content ? esc(p.content).replace(/\\n/g,'<br/>') : '<span class="empty">Konten belum diisi admin.</span>'}
+    </div>
+  `;
+}
+
+/* ---------- PROMO ---------- */
+function renderPromo(){
+  return `
+    <h2 class="section-title">🎁 Paket Hemat & Promo</h2>
+    <p class="section-sub">Konten promo dikelola admin lewat panel (menu Info Toko &amp; Pengaturan).</p>
+    <div class="card">${State.settings.promoText ? esc(State.settings.promoText).replace(/\\n/g,'<br/>') : '<span class="empty">Belum ada promo aktif saat ini.</span>'}</div>
+  `;
+}
+
+/* ---------- CART / CHECKOUT (gate: harus login sbg client) ---------- */
+function renderCart(){
+  const isClient = State.auth && State.auth.role === 'client';
+  const total = State.cart.reduce((s,c)=>s+c.price*c.qty,0);
+  return `
+    <h2 class="section-title">🛒 Keranjang</h2>
+    ${!State.cart.length ? '<div class="empty">Keranjang masih kosong.</div>' : `
+      <table>
+        <tr><th>Produk</th><th>Harga</th><th>Qty</th><th>Subtotal</th><th></th></tr>
+        ${State.cart.map(c => `<tr>
+          <td>${esc(c.name)}</td><td>${rupiah(c.price)}</td>
+          <td>${c.qty}</td><td>${rupiah(c.price*c.qty)}</td>
+          <td><button class="btn" onclick="removeFromCart('${esc(c.id)}')">Hapus</button></td>
+        </tr>`).join('')}
+      </table>
+      <h3 style="margin-top:16px">Total: ${rupiah(total)}</h3>
+      ${isClient
+        ? `<button class="btn btn-primary" onclick="checkout()">Checkout Pesanan</button>`
+        : `<div class="card" style="background:#fff8e6;border-color:#f0dfa0">
+             <b>Daftar / masuk dulu ya</b> sebelum checkout, supaya pesanan tercatat atas nama Anda.
+             <div class="row" style="margin-top:10px">
+               <a class="btn btn-primary" href="#/daftar">Daftar Akun</a>
+               <a class="btn" href="#/login">Sudah Punya Akun</a>
+             </div>
+           </div>`}
+    `}
+  `;
+}
+function removeFromCart(id){ State.cart = State.cart.filter(c => c.id !== id); saveCart(); render(); }
+async function checkout(){
+  const total = State.cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const res = await api('placeOrder', { token: State.auth.token, clientName: State.auth.name, items: State.cart, total }, 'POST');
+  if (res.ok) { alert('Pesanan berhasil dibuat! Kami akan menghubungi Anda via WhatsApp.'); State.cart = []; saveCart(); go('#/katalog'); }
+  else alert('Gagal membuat pesanan: ' + res.error);
+}
+
+/* ---------- LOGIN / DAFTAR (halaman terpisah, referensi tampilan foto pertama) ---------- */
+function renderAuthModal(mode){
+  return `
+  <div class="modal-bg">
+    <div class="modal">
+      <div class="brand-block" style="margin-bottom:22px">
+        <div class="brand-logo">🏪</div>
+        <div class="brand-name">${esc(State.settings.storeName||'Toko Sembako')}</div>
+      </div>
+      <h2 style="margin:0 0 18px">${mode==='login' ? 'Masuk ke Akun Anda' : 'Daftar Akun Pelanggan'}</h2>
+      <div id="auth-msg"></div>
+      ${mode==='daftar' ? `<div class="field"><label>Nama Lengkap</label><input id="af-name" placeholder="Nama Anda"/></div>` : ''}
+      <div class="field"><label>Email</label><input id="af-email" type="email" placeholder="nama@email.com"/></div>
+      ${mode==='daftar' ? `<div class="field"><label>No. WhatsApp</label><input id="af-phone" placeholder="08xxxxxxxxxx"/></div>` : ''}
+      <div class="field"><label>Password</label><input id="af-pass" type="password" placeholder="Password"/></div>
+      <button class="btn btn-primary" style="width:100%;padding:12px" onclick="submitAuth('${mode}')">${mode==='login' ? 'Masuk' : 'Daftar'}</button>
+      <p style="text-align:center;font-size:13px;margin-top:16px;color:var(--muted)">
+        ${mode==='login' ? `Belum punya akun? <a href="#/daftar" style="color:var(--primary-dark);font-weight:600">Daftar di sini</a>`
+                          : `Sudah punya akun? <a href="#/login" style="color:var(--primary-dark);font-weight:600">Masuk di sini</a>`}
+      </p>
+      <p style="text-align:center;margin-top:8px"><a href="#/katalog" style="font-size:13px;color:var(--muted)">← Lihat-lihat dulu tanpa akun</a></p>
+      <hr style="margin:16px 0;border:none;border-top:1px solid var(--border)"/>
+      <p style="text-align:center;font-size:12px;color:var(--muted)">Admin toko? <a href="#/login-admin" onclick="event.preventDefault();showAdminLogin()" style="color:var(--gold);font-weight:600">Masuk sebagai Admin</a></p>
+    </div>
+  </div>`;
+}
+function showAdminLogin(){
+  document.getElementById('app').innerHTML = `
+  <div class="modal-bg"><div class="modal">
+    <h2 style="margin:0 0 18px">🔐 Masuk Panel Admin</h2>
+    <div id="auth-msg"></div>
+    <div class="field"><label>Email Admin</label><input id="af-email" type="email"/></div>
+    <div class="field"><label>Password</label><input id="af-pass" type="password"/></div>
+    <button class="btn btn-dark" style="width:100%;padding:12px" onclick="submitAuth('admin')">Masuk</button>
+    <p style="text-align:center;margin-top:14px"><a href="#/katalog" style="font-size:13px;color:var(--muted)">← Kembali ke toko</a></p>
+  </div></div>`;
+}
+async function submitAuth(mode){
+  const email = document.getElementById('af-email').value.trim();
+  const pass = document.getElementById('af-pass').value;
+  const msgEl = document.getElementById('auth-msg');
+  msgEl.innerHTML = '';
+  let res;
+  if (mode === 'admin') res = await api('adminLogin', { email, password: pass }, 'POST');
+  else if (mode === 'login') res = await api('clientLogin', { email, password: pass }, 'POST');
+  else {
+    const name = document.getElementById('af-name').value.trim();
+    const phone = document.getElementById('af-phone').value.trim();
+    res = await api('clientRegister', { name, email, phone, password: pass }, 'POST');
+  }
+  if (!res.ok) { msgEl.innerHTML = `<div class="msg msg-error">${esc(res.error)}</div>`; return; }
+  if (mode === 'admin') { saveAuth({ role:'admin', token: res.data.token, email: res.data.email }); go('#/admin'); }
+  else { saveAuth({ role:'client', token: res.data.token, name: res.data.name, email: res.data.email }); go('#/katalog'); }
+  render();
+}
+
+/* ======================= PANEL ADMIN ======================= */
+let adminTab = 'produk';
+function renderAdmin(app){
+  if (!State.auth || State.auth.role !== 'admin') { go('#/login'); return; }
+  const tabs = [
+    ['produk','📦 Kelola Produk'],
+    ['tentang-toko','ℹ️ Tentang Toko Sembako'],
+    ['tentang-tahfidz','📖 Tentang Rumah Tahfidz'],
+    ['info','🏬 Info Toko & Promo'],
+    ['pesanan','🧾 Pesanan Masuk'],
+    ['akun','🔑 Ganti Password Admin'],
+    ['sync','🔄 Sync & Reset DB']
+  ];
+  app.innerHTML = `
+  <header class="main">
+    <div class="brand-block">
+      <div class="brand-logo">⚙️</div>
+      <div><div class="brand-name">Panel Admin — ${esc(State.settings.storeName||'')}</div>
+      <div class="brand-tag">Masuk sebagai ${esc(State.auth.email)}</div></div>
+    </div>
+    <a class="btn" href="#/katalog">🔎 Lihat Website</a>
+    <button class="btn" onclick="logout()">Keluar</button>
+  </header>
+  <div class="container">
+    <div class="tabs">${tabs.map(([k,l]) => `<button class="${adminTab===k?'active':''}" onclick="setAdminTab('${k}')">${l}</button>`).join('')}</div>
+    <div id="admin-content"></div>
+  </div>`;
+  renderAdminTab();
+}
+function setAdminTab(t){ adminTab = t; renderAdminTab(); }
+function renderAdminTab(){
+  const el = document.getElementById('admin-content');
+  if (adminTab === 'produk') el.innerHTML = adminProdukHtml();
+  else if (adminTab === 'tentang-toko') el.innerHTML = adminPageEditorHtml('tentang-toko-sembako');
+  else if (adminTab === 'tentang-tahfidz') el.innerHTML = adminPageEditorHtml('tentang-rumah-tahfidz');
+  else if (adminTab === 'info') el.innerHTML = adminInfoHtml();
+  else if (adminTab === 'pesanan') adminPesananHtml();
+  else if (adminTab === 'akun') el.innerHTML = adminAkunHtml();
+  else if (adminTab === 'sync') el.innerHTML = adminSyncHtml();
+}
+
+function adminProdukHtml(){
+  return `
+    <div class="card" style="margin-bottom:18px">
+      <h3 style="margin-top:0">Tambah / Ubah Produk</h3>
+      <input type="hidden" id="p-id"/>
+      <div class="row">
+        <div class="field" style="flex:2;min-width:160px"><label>Nama</label><input id="p-name"/></div>
+        <div class="field" style="flex:1;min-width:120px"><label>Kategori</label><input id="p-category"/></div>
+      </div>
+      <div class="row">
+        <div class="field" style="flex:1;min-width:120px"><label>Harga</label><input id="p-price" type="number"/></div>
+        <div class="field" style="flex:1;min-width:120px"><label>Satuan</label><input id="p-unit" placeholder="per kg"/></div>
+        <div class="field" style="flex:1;min-width:100px"><label>Stok</label><input id="p-stock" type="number"/></div>
+      </div>
+      <button class="btn btn-primary" onclick="saveProductForm()">💾 Simpan Produk</button>
+      <span id="p-msg"></span>
+    </div>
+    <table>
+      <tr><th>Nama</th><th>Kategori</th><th>Harga</th><th>Stok</th><th></th></tr>
+      ${State.products.map(p => `<tr>
+        <td>${esc(p.name)}</td><td>${esc(p.category)}</td><td>${rupiah(p.price)}</td><td>${esc(p.stock)}</td>
+        <td class="row">
+          <button class="btn" onclick="editProduct('${esc(p.id)}')">Edit</button>
+          <button class="btn" onclick="deleteProductAdmin('${esc(p.id)}')">Hapus</button>
+        </td>
+      </tr>`).join('')}
+    </table>
+  `;
+}
+function editProduct(id){
+  const p = State.products.find(x => String(x.id)===String(id)); if (!p) return;
+  document.getElementById('p-id').value = p.id;
+  document.getElementById('p-name').value = p.name;
+  document.getElementById('p-category').value = p.category;
+  document.getElementById('p-price').value = p.price;
+  document.getElementById('p-unit').value = p.unit;
+  document.getElementById('p-stock').value = p.stock;
+  window.scrollTo(0,0);
+}
+async function saveProductForm(){
+  const product = {
+    id: document.getElementById('p-id').value || undefined,
+    name: document.getElementById('p-name').value,
+    category: document.getElementById('p-category').value,
+    price: Number(document.getElementById('p-price').value)||0,
+    unit: document.getElementById('p-unit').value,
+    stock: Number(document.getElementById('p-stock').value)||0
+  };
+  const res = await api('saveProduct', { token: State.auth.token, product }, 'POST');
+  const msg = document.getElementById('p-msg');
+  if (res.ok) { msg.textContent = '✅ Tersimpan'; await loadAll(); renderAdminTab(); }
+  else msg.textContent = '❌ ' + res.error;
+}
+async function deleteProductAdmin(id){
+  if (!confirm('Hapus produk ini?')) return;
+  const res = await api('deleteProduct', { token: State.auth.token, id }, 'POST');
+  if (res.ok) { await loadAll(); renderAdminTab(); } else alert(res.error);
+}
+
+function adminPageEditorHtml(key){
+  const p = State.pages[key] || {};
+  return `
+    <div class="card">
+      <h3 style="margin-top:0">Edit Halaman: ${key === 'tentang-toko-sembako' ? 'Tentang Toko Sembako' : 'Tentang Rumah Tahfidz'}</h3>
+      <div class="field"><label>Judul</label><input id="pg-title" value="${esc(p.title||'')}"/></div>
+      <div class="field"><label>Isi Konten</label><textarea id="pg-content" style="min-height:200px">${esc(p.content||'')}</textarea></div>
+      <button class="btn btn-primary" onclick="savePageForm('${key}')">💾 Simpan Halaman</button>
+      <span id="pg-msg"></span>
+    </div>`;
+}
+async function savePageForm(key){
+  const page = { key, title: document.getElementById('pg-title').value, content: document.getElementById('pg-content').value };
+  const res = await api('savePage', { token: State.auth.token, page }, 'POST');
+  const msg = document.getElementById('pg-msg');
+  if (res.ok) { msg.textContent = '✅ Tersimpan'; await loadAll(); }
+  else msg.textContent = '❌ ' + res.error;
+}
+
+function adminInfoHtml(){
+  const s = State.settings;
+  return `
+    <div class="card">
+      <h3 style="margin-top:0">Info Toko & Pengaturan Tampilan</h3>
+      <div class="row">
+        <div class="field" style="flex:1;min-width:200px"><label>Nama Toko</label><input id="s-storeName" value="${esc(s.storeName||'')}"/></div>
+        <div class="field" style="flex:1;min-width:200px"><label>Tagline</label><input id="s-tagline" value="${esc(s.tagline||'')}"/></div>
+      </div>
+      <div class="row">
+        <div class="field" style="flex:1;min-width:200px"><label>Jam Buka</label><input id="s-openHours" value="${esc(s.openHours||'')}"/></div>
+        <div class="field" style="flex:1;min-width:200px"><label>No. WhatsApp</label><input id="s-whatsapp" value="${esc(s.whatsapp||'')}"/></div>
+      </div>
+      <div class="field"><label>Catatan Ongkir</label><input id="s-freeShippingNote" value="${esc(s.freeShippingNote||'')}"/></div>
+      <div class="field"><label>Teks Paket Hemat & Promo</label><textarea id="s-promoText">${esc(s.promoText||'')}</textarea></div>
+      <button class="btn btn-primary" onclick="saveSettingsForm()">💾 Simpan Pengaturan</button>
+      <span id="s-msg"></span>
+    </div>`;
+}
+async function saveSettingsForm(){
+  const settings = {
+    storeName: document.getElementById('s-storeName').value,
+    tagline: document.getElementById('s-tagline').value,
+    openHours: document.getElementById('s-openHours').value,
+    whatsapp: document.getElementById('s-whatsapp').value,
+    freeShippingNote: document.getElementById('s-freeShippingNote').value,
+    promoText: document.getElementById('s-promoText').value
+  };
+  const res = await api('saveSettings', { token: State.auth.token, settings }, 'POST');
+  const msg = document.getElementById('s-msg');
+  if (res.ok) { msg.textContent = '✅ Tersimpan'; await loadAll(); }
+  else msg.textContent = '❌ ' + res.error;
+}
+
+async function adminPesananHtml(){
+  const el = document.getElementById('admin-content');
+  el.innerHTML = '<p>Memuat pesanan...</p>';
+  const res = await api('getOrders', { token: State.auth.token }, 'POST');
+  if (!res.ok) { el.innerHTML = `<div class="msg msg-error">${esc(res.error)}</div>`; return; }
+  const orders = res.data;
+  el.innerHTML = !orders.length ? '<div class="empty">Belum ada pesanan masuk.</div>' : `
+    <table>
+      <tr><th>Waktu</th><th>Pelanggan</th><th>Email</th><th>Total</th><th>Status</th></tr>
+      ${orders.map(o => `<tr>
+        <td>${esc(new Date(o.createdAt).toLocaleString('id-ID'))}</td>
+        <td>${esc(o.clientName)}</td><td>${esc(o.clientEmail)}</td>
+        <td>${rupiah(o.total)}</td><td>${esc(o.status)}</td>
+      </tr>`).join('')}
+    </table>`;
+}
+
+function adminAkunHtml(){
+  return `
+    <div class="card" style="max-width:420px">
+      <h3 style="margin-top:0">Ganti Password Admin</h3>
+      <div id="pw-msg"></div>
+      <div class="field"><label>Password Lama</label><input id="pw-old" type="password"/></div>
+      <div class="field"><label>Password Baru</label><input id="pw-new" type="password"/></div>
+      <button class="btn btn-primary" onclick="changePw()">Simpan Password Baru</button>
+    </div>`;
+}
+async function changePw(){
+  const oldPassword = document.getElementById('pw-old').value;
+  const newPassword = document.getElementById('pw-new').value;
+  const res = await api('changeAdminPassword', { token: State.auth.token, oldPassword, newPassword }, 'POST');
+  const msg = document.getElementById('pw-msg');
+  msg.innerHTML = res.ok ? `<div class="msg msg-ok">✅ ${esc(res.data)}</div>` : `<div class="msg msg-error">❌ ${esc(res.error)}</div>`;
+}
+
+function adminSyncHtml(){
+  return `
+    <div class="card">
+      <h3 style="margin-top:0">🔄 Status Database</h3>
+      <p>Database Google Sheets terhubung. Produk: <b>${State.products.length}</b> item, Halaman: <b>${Object.keys(State.pages).length}</b>.</p>
+      <p style="color:var(--muted);font-size:13px">Data langsung tersinkron setiap kali admin mengubah produk, halaman, atau pengaturan — karena semuanya membaca/menulis langsung ke Google Sheet.</p>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0"/>
+      <h3>Reset Database ke Setelan Awal</h3>
+      <p style="color:var(--muted);font-size:13px">Mengembalikan produk, halaman "Tentang", dan pengaturan ke data awal. Akun pelanggan &amp; pesanan tidak dihapus.</p>
+      <button class="btn btn-dark" onclick="resetDb()">Reset Database ke Setelan Awal</button>
+    </div>`;
+}
+async function resetDb(){
+  if (!confirm('Yakin reset semua produk & halaman ke data awal?')) return;
+  const res = await api('resetToDefaults', { token: State.auth.token }, 'POST');
+  if (res.ok) { alert(res.data); await loadAll(); renderAdminTab(); } else alert(res.error);
+}
+
+/* ======================= INIT ======================= */
+(async function init(){
+  await loadAll();
+  render();
+})();
+</script>
+</body>
+</html>
