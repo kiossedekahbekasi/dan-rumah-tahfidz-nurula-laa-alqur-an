@@ -565,7 +565,16 @@ function renderAdmin(app){
     <div id="admin-content"></div>
   </div>`;
   renderAdminTab();
-  loadOrdersTabBadge();
+  // FIX: Tab "Pesanan Masuk" sudah mengambil datanya sendiri lewat
+  // adminPesananHtml() di atas (kalau memang tab itu yang aktif), jadi
+  // di sini kita tidak perlu menembak getOrders lagi. Sebelumnya kode
+  // ini SELALU memanggil loadOrdersTabBadge() tanpa syarat, sehingga
+  // setiap kali panel admin dirender ulang ada 2 request getOrders
+  // yang jalan berbarengan (satu untuk badge, satu untuk isi tab) —
+  // ini memperlambat loading dan bisa memicu race condition tampilan.
+  if (adminTab !== 'pesanan') {
+    loadOrdersTabBadge();
+  }
 }
 function setAdminTab(t){ adminTab = t; renderAdminTab(); }
 function renderAdminTab(){
@@ -962,8 +971,15 @@ async function adminPesananHtml(){
   const el = document.getElementById('admin-content');
   el.innerHTML = '<p>Memuat pesanan...</p>';
   const res = await api('getOrders', { token: State.auth.token }, 'POST');
+  // FIX: kalau selagi menunggu respons server, admin sudah pindah ke tab
+  // lain, JANGAN timpa konten tab yang sekarang sedang aktif. Sebelumnya
+  // tidak ada pengecekan ini, sehingga "Memuat pesanan..." atau isi tab
+  // Pesanan bisa muncul nyangkut di tab lain (mis. "Tentang Rumah Tahfidz")
+  // kalau requestnya baru selesai setelah admin pindah tab.
+  if (adminTab !== 'pesanan') return;
   if (!res.ok) { el.innerHTML = `<div class="msg msg-error">${esc(res.error)}</div>`; return; }
   ordersCache = res.data;
+  if (adminTab !== 'pesanan') return;
   el.innerHTML = ordersPanelHtml();
   updateOrdersTabBadge();
 }
@@ -971,7 +987,13 @@ async function adminPesananHtml(){
    pesanan Baru / Diproses / Siap diambil tanpa harus buka tabnya dulu. */
 async function loadOrdersTabBadge(){
   const res = await api('getOrders', { token: State.auth.token }, 'POST');
-  if (res.ok) { ordersCache = res.data; updateOrdersTabBadge(); }
+  if (!res.ok) return;
+  // FIX: kalau selagi menunggu, admin sudah pindah ke tab "pesanan" itu
+  // sendiri (yang sudah mengambil datanya sendiri lewat adminPesananHtml),
+  // jangan timpa ordersCache dengan hasil yang mungkin lebih basi.
+  if (adminTab === 'pesanan') return;
+  ordersCache = res.data;
+  updateOrdersTabBadge();
 }
 function updateOrdersTabBadge(){
   const btn = document.getElementById('tab-pesanan');
