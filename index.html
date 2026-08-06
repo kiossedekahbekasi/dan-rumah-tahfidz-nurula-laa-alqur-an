@@ -1025,8 +1025,16 @@ async function adminPesananHtml(){
   if (!res.ok) { el.innerHTML = `<div class="msg msg-error">${esc(res.error)}</div>`; return; }
   ordersCache = res.data;
   if (adminTab !== 'pesanan') return;
-  el.innerHTML = ordersPanelHtml();
-  updateOrdersTabBadge();
+  // FIX: bungkus dengan try/catch supaya kalau ada data pesanan yang
+  // rusak/format tak terduga (mis. dari baris lama di sheet), panel
+  // menampilkan pesan error yang jelas alih-alih nyangkut selamanya di
+  // "Memuat pesanan..." tanpa keterangan apa pun (seperti sebelumnya).
+  try {
+    el.innerHTML = ordersPanelHtml();
+    updateOrdersTabBadge();
+  } catch (err) {
+    el.innerHTML = `<div class="msg msg-error">Gagal menampilkan pesanan (ada data yang formatnya tidak sesuai): ${esc(String(err))}</div>`;
+  }
 }
 /* Badge notifikasi di tab "Pesanan Masuk" supaya admin langsung tahu ada
    pesanan Baru / Diproses / Siap diambil tanpa harus buka tabnya dulu. */
@@ -1066,7 +1074,12 @@ function onOrderSearch(v){ orderSearch = v; renderOrdersList(); }
 function setOrderFilter(s){ orderFilter = s; renderOrdersList(); }
 function renderOrdersList(){
   const el = document.getElementById('admin-content');
-  if (el) el.innerHTML = ordersPanelHtml();
+  if (!el) return;
+  try {
+    el.innerHTML = ordersPanelHtml();
+  } catch (err) {
+    el.innerHTML = `<div class="msg msg-error">Gagal menampilkan pesanan (ada data yang formatnya tidak sesuai): ${esc(String(err))}</div>`;
+  }
 }
 function statusPillClass(status){
   if (status === 'Baru') return 'pill-gold';
@@ -1077,8 +1090,16 @@ function statusPillClass(status){
 }
 function orderCardHtml(o){
   let items = [];
-  try { items = JSON.parse(o.items || '[]'); } catch(e){ items = []; }
-  const itemsSummary = items.map(it => `${it.name}${it.qty>1?(' x'+it.qty):''}`).join(', ');
+  try {
+    const parsed = JSON.parse(o.items || '[]');
+    // FIX: JSON.parse bisa "berhasil" tapi hasilnya bukan array (mis.
+    // data lama/rusak di sheet berupa object, string, atau angka).
+    // Kalau langsung dipakai .map() di baris bawah, ini bikin seluruh
+    // render pesanan crash (Uncaught TypeError: items.map is not a
+    // function) dan panel admin nyangkut selamanya di "Memuat pesanan...".
+    items = Array.isArray(parsed) ? parsed : [];
+  } catch(e){ items = []; }
+  const itemsSummary = items.map(it => `${esc(it && it.name || '?')}${it && it.qty>1?(' x'+it.qty):''}`).join(', ');
   const digits = (o.clientPhone||'').replace(/[^0-9]/g,'');
   const waNumber = digits ? (digits.charAt(0) === '0' ? '62' + digits.slice(1) : digits) : '';
   const waLink = waNumber ? `https://wa.me/${waNumber}` : '';
